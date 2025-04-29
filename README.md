@@ -18,7 +18,7 @@ npm or yarn
 
 Installation
 Clone the repository:
-git clone https://github.com/yourusername/convo-bot.git
+git clone https://github.com/salmahaz/convo-bot
 cd convo-bot
 Install dependencies:
 npm install
