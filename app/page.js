@@ -7,18 +7,20 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { ChatSkeleton } from "../components/atoms/ChatSkeleton";
 
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  // Load messages from local storage on component mount
   useEffect(() => {
     const storedMessages = JSON.parse(localStorage.getItem("chatMessages"));
     if (storedMessages) {
       setMessages(storedMessages);
     }
+    setInitialLoading(false);
   }, []);
 
   const handleSend = async () => {
@@ -52,7 +54,6 @@ export default function Home() {
     }
   };
 
-  // Store messages in local storage whenever they change
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem("chatMessages", JSON.stringify(messages));
@@ -66,53 +67,57 @@ export default function Home() {
       </h1>
 
       <div className="w-full max-w-md h-[calc(100vh-220px)] sm:h-[calc(100vh-240px)] bg-transparent rounded-lg p-2 sm:p-4 overflow-y-auto shadow-md flex flex-col gap-2 sm:gap-4">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`${
-              msg.role === "user"
-                ? "self-end bg-blue-500 text-white"
-                : "self-start bg-blue-100 text-gray-800"
-            } p-2 sm:p-3 rounded-lg shadow-md max-w-[85%] sm:max-w-[75%] text-xs sm:text-sm break-words`}
-          >
-            <strong className="text-xs sm:text-sm">{msg.role === "user" ? "You" : "Bot"}:</strong>
-            <ReactMarkdown
-              components={{
-                code({ node, inline, className, children, ...props }) {
-                  return !inline ? (
-                    <SyntaxHighlighter
-                      style={vscDarkPlus}
-                      language="javascript"
-                      PreTag="div"
-                      customStyle={{
-                        margin: '0.5rem 0',
-                        padding: '0.5rem',
-                        fontSize: '0.75rem',
-                        borderRadius: '0.25rem'
-                      }}
-                    >
-                      {String(children).replace(/\n$/, "")}
-                    </SyntaxHighlighter>
-                  ) : (
-                    <code
-                      className="bg-gray-200 text-xs sm:text-sm px-1 rounded"
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                },
-              }}
+        {initialLoading ? (
+          <>
+            <ChatSkeleton />
+            <ChatSkeleton />
+            <ChatSkeleton />
+          </>
+        ) : (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`${
+                msg.role === "user"
+                  ? "self-end bg-blue-500 text-white"
+                  : "self-start bg-blue-100 text-gray-800"
+              } p-2 sm:p-3 rounded-lg shadow-md max-w-[85%] sm:max-w-[75%] text-xs sm:text-sm break-words`}
             >
-              {msg.content}
-            </ReactMarkdown>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="self-start bg-blue-100 text-gray-800 p-2 sm:p-3 rounded-lg shadow-md max-w-[85%] sm:max-w-[75%] text-xs sm:text-sm">
-            <strong>Bot:</strong> Thinking...
-          </div>
+              <strong className="text-xs sm:text-sm">{msg.role === "user" ? "You" : "Bot"}:</strong>
+              <ReactMarkdown
+                components={{
+                  code({ node, inline, className, children, ...props }) {
+                    return !inline ? (
+                      <SyntaxHighlighter
+                        style={vscDarkPlus}
+                        language="javascript"
+                        PreTag="div"
+                        customStyle={{
+                          margin: '0.5rem 0',
+                          padding: '0.5rem',
+                          fontSize: '0.75rem',
+                          borderRadius: '0.25rem'
+                        }}
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code
+                        className="bg-gray-200 text-xs sm:text-sm px-1 rounded"
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              >
+                {msg.content}
+              </ReactMarkdown>
+            </div>
+          ))
         )}
+        {isLoading && <ChatSkeleton />}
       </div>
 
       <div className="flex items-center mt-2 w-full max-w-md gap-2">
